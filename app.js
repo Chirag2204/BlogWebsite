@@ -1,4 +1,5 @@
 require("dotenv").config();//to use environment variables
+const md5 = require('md5');//for hashing password 
 const express = require("express");
 const bodyParser = require("body-parser");
 const ejs = require("ejs");
@@ -46,7 +47,7 @@ const UserDetailSchema = new mongoose.Schema({
 })
 
 
-UserDetailSchema.plugin(encrypt,{secret : process.env.SECRET,encryptedFields : ["_password"]});//to encrypt username and password
+//UserDetailSchema.plugin(encrypt,{secret : process.env.SECRET,encryptedFields : ["_password"]});//to encrypt username and password
 const UserDetail = mongoose.model("UserDetail",UserDetailSchema);
 
 app.get("/",function(req,res){
@@ -63,7 +64,7 @@ app.post("/signup",function(req,res){
   const user = new UserDetail({
     _email : req.body.email,
     _username : req.body.username,
-    _password : req.body.password
+    _password : md5(req.body.password)
   });
 
    user.save(function(err){
@@ -92,7 +93,7 @@ app.get("/login",function(req,res){
 app.post("/login",async function(req,res){
   UserDetail.findOne({_username : req.body.username},function(err,founduser){
     if (founduser) {
-      if (founduser._password === req.body.password) {
+      if (founduser._password === md5(req.body.password)) {
         localusername = req.body.username;
         res.render("home",{
           content : homeStartingContent,

@@ -15,6 +15,7 @@
     "express": "^4.17.1",
     "localStorage": "^1.0.4",
     "lodash": "^4.17.21",
+    "md5": "^2.3.0",
     "mongodb": "^3.6.9",
     "mongoose": "^5.12.11",
     "mongoose-encryption": "^2.1.0",
