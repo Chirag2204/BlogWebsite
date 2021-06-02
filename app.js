@@ -1,5 +1,5 @@
 require("dotenv").config();//to use environment variables
-const md5 = require('md5');//for hashing password 
+//const md5 = require('md5');//for hashing password
 const express = require("express");
 const bodyParser = require("body-parser");
 const ejs = require("ejs");
@@ -7,6 +7,9 @@ const lodash = require('lodash');
 const mongodb = require('mongodb');
 const mongoose = require('mongoose');
 const encrypt = require('mongoose-encryption');
+const bcrypt = require('bcrypt');
+
+const saltrounds = 10;
 
 const  homeStartingContent = "Lacus vel facilisis volutpat est velit egestas dui id ornare. Semper auctor neque vitae tempus quam. Sit amet cursus sit amet dictum sit amet justo. Viverra tellus in hac habitasse. Imperdiet proin fermentum leo vel orci porta. Donec ultrices tincidunt arcu non sodales neque sodales ut. Mattis molestie a iaculis at erat pellentesque adipiscing. Magnis dis parturient montes nascetur ridiculus mus mauris vitae ultricies. Adipiscing elit ut aliquam purus sit amet luctus venenatis lectus. Ultrices vitae auctor eu augue ut lectus arcu bibendum at. Odio euismod lacinia at quis risus sed vulputate odio ut. Cursus mattis molestie a iaculis at erat pellentesque adipiscing.";
 const aboutContent = "Hac habitasse platea dictumst vestibulum rhoncus est pellentesque. Dictumst vestibulum rhoncus est pellentesque elit ullamcorper. Non diam phasellus vestibulum lorem sed. Platea dictumst quisque sagittis purus sit. Egestas sed sed risus pretium quam vulputate dignissim suspendisse. Mauris in aliquam sem fringilla. Semper risus in hendrerit gravida rutrum quisque non tellus orci. Amet massa vitae tortor condimentum lacinia quis vel eros. Enim ut tellus elementum sagittis vitae. Mauris ultrices eros in cursus turpis massa tincidunt dui.";
@@ -61,24 +64,27 @@ app.get("/signup",function(req,res){
 })
 
 app.post("/signup",function(req,res){
-  const user = new UserDetail({
-    _email : req.body.email,
-    _username : req.body.username,
-    _password : md5(req.body.password)
-  });
 
-   user.save(function(err){
-    if(err){
-      console.log(err);
-      res.render("signup",{
-        text1 : "Username or Email Already Registered"
-      })
-    }else{
-      res.render("login",{
-        text1 : "SignedUp Successfully",
-        text2 : ""
-      })
-    }
+  bcrypt.hash(req.body.password,saltrounds,function(err,hash){
+    const user = new UserDetail({
+      _email : req.body.email,
+      _username : req.body.username,
+      _password : hash
+    });
+
+     user.save(function(err){
+      if(err){
+        console.log(err);
+        res.render("signup",{
+          text1 : "Username or Email Already Registered"
+        })
+      }else{
+        res.render("login",{
+          text1 : "SignedUp Successfully",
+          text2 : ""
+        })
+      }
+    })
   });
 
 })
@@ -91,23 +97,30 @@ app.get("/login",function(req,res){
 })
 
 app.post("/login",async function(req,res){
-  UserDetail.findOne({_username : req.body.username},function(err,founduser){
-    if (founduser) {
-      if (founduser._password === md5(req.body.password)) {
-        localusername = req.body.username;
-        res.render("home",{
-          content : homeStartingContent,
-          blogs : founduser._blogs,
+    UserDetail.findOne({_username : req.body.username},function(err,founduser){
+      if (founduser) {
+        bcrypt.compare(req.body.password,founduser._password,function(err,result){
+          if(result === true){
+            localusername = req.body.username;
+            res.render("home",{
+              content : homeStartingContent,
+              blogs : founduser._blogs,
+            })
+          }else{
+            res.render("login",{
+              text1 : "",
+              text2 : "Username or Password is Invalid!"
+            })
+          }
         })
       }
-    }
-    else{
-      res.render("login",{
-        text1 : "",
-        text2 : "Username or Password is Invalid!"
-      })
-    }
-  });
+      else{
+        res.render("login",{
+          text1 : "",
+          text2 : "Username or Password is Invalid!"
+        })
+      }
+    });
 })
 
 app.get("/home",function(req,res){
