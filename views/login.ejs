@@ -1,6 +1,5 @@
 <%-include("partials/header")-%>
 <form class="form-signin"  action="/login" method="post">
-  
   <h1 class="h1 mb-3 font-weight-bold" style="text-align:center; margin-bottom : 30px;">Login</h1>
   <p style="color : red;fontsize : 3rem;"><%=text1%></p>
     <label style="margin-bottom : 10px;" for="inputusername">Username</label>
@@ -10,6 +9,9 @@
     <input style="margin-bottom : 15px;" type="password" name="password" class="form-control" placeholder="Password" required style="margin-bottom: 10px;">
 
     <button class="btn btn-lg  btn-dark btn-outline-primary " type="submit">Login</button>
+     <br>
+     <h3 style = "margin-left  :10px;">OR</h3>
+      <a class="btn btn-lg  btn-danger btn-outline-primary " href = "/login/auth/google" role="button"><i class="fab fa-google"></i>Login Using Google</a>
    <p style="color : red;fontsize : 3rem;"><%=text2%></p>
-</form>
+   </form>
 <%-include("partials/footer")-%>
